@@ -1,42 +1,324 @@
 <!DOCTYPE html>
-<!--
-To change this license header, choose License Headers in Project Properties.
-To change this template file, choose Tools | Templates
-and open the template in the editor.
--->
-<html>
-    <head>
-        <title>TODO supply a title</title>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    </head>
-    <body>
-        <h3>h3</h3>
-        <h4 style="color:red">h4</h4>
-        <img src="image/螢幕擷取畫面.png" width="500" height="214" alt="螢幕擷取畫面 2026-03-07 143304"/>
-        <br>
-        <a href="https://www.youtube.com/watch?v=EVqAd_dRrtA&list=RDEVqAd_dRrtA&start_radio=1">歌曲</a>
-        <form>
-            帳號:<input type="text" name="aa" value="" />
-            <br>
-            密碼:<input type="password" name="aa" value="" />
-            <br>   
-        </form>
-        <h3 id="txt">變色文字</h3>
-        <button id="red">變紅</button>
-        <button id="blue">變藍</button>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <title>永續發展題庫系統</title>
+    <style>
+    :root { 
+        /* 淺色模式變數 */
+        --primary: #4f46e5; 
+        --bg: #f8fafc; 
+        --card-bg: #ffffff;
+        --text-main: #1e293b;
+        --text-muted: #64748b;
+        --border: #e2e8f0;
+        --option-border: #f1f5f9;
+        --option-hover: #f8fafc;
+    }
+
+    /* 深色模式變數 - 當 body 帶有 dark-mode 類別時觸發 */
+    body.dark-mode {
+        --bg: #0f172a;
+        --card-bg: #1e293b;
+        --text-main: #f1f5f9;
+        --text-muted: #94a3b8;
+        --border: #334155;
+        --option-border: #334155;
+        --option-hover: #2d3748;
+    }
+
+    body { 
+        font-family: "PingFang TC", "Microsoft JhengHei", sans-serif; 
+        background: var(--bg); 
+        color: var(--text-main);
+        display: flex; justify-content: center; align-items: flex-start; 
+        min-height: 100vh; margin: 0; padding-top: 50px; 
+        transition: background 0.3s, color 0.3s; /* 平滑切換動畫 */
+    }
+    
+    /* 深色模式切換按鈕 */
+    .theme-toggle {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: var(--card-bg);
+        border: 2px solid var(--border);
+        color: var(--text-main);
+        padding: 10px;
+        border-radius: 50%;
+        cursor: pointer;
+        width: 45px;
+        height: 45px;
+        font-size: 20px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        z-index: 100;
+        transition: 0.3s;
+    }
+
+    .card { 
+        background: var(--card-bg); 
+        padding: 40px; border-radius: 20px; 
+        box-shadow: 0 15px 35px rgba(0,0,0,0.1); 
+        width: 90%; max-width: 600px; text-align: center; 
+        transition: background 0.3s;
+    }
+    
+    #home-page h1 { color: var(--primary); margin-bottom: 30px; font-size: 28px; }
+    .select-group { margin: 30px 0; }
+    
+    select { 
+        width: 100%; padding: 12px; font-size: 18px; border-radius: 10px; 
+        border: 2px solid var(--border); 
+        background: var(--card-bg);
+        color: var(--text-main);
+        cursor: pointer; outline: none; transition: 0.3s; 
+    }
+    select:focus { border-color: var(--primary); }
+    
+    .start-btn { 
+        background: var(--primary); color: white; border: none; 
+        padding: 15px 40px; border-radius: 12px; font-size: 18px; 
+        cursor: pointer; width: 100%; font-weight: bold; transition: 0.3s; 
+    }
+    .start-btn:hover { background: #4338ca; transform: translateY(-2px); }
+
+    #quiz-page { display: none; text-align: left; }
+    h2 { color: var(--text-main); line-height: 1.5; font-size: 20px; margin-top: 10px; min-height: 3.5em; }
+    
+    .option-btn { 
+        display: flex; justify-content: space-between; align-items: center;
+        width: 100%; margin: 12px 0; padding: 16px; 
+        border: 2px solid var(--option-border); 
+        border-radius: 12px; background: var(--card-bg); 
+        color: var(--text-main);
+        cursor: pointer; transition: 0.2s; text-align: left; font-size: 16px;
+    }
+    .option-btn:hover:not([disabled]) { border-color: var(--primary); background: var(--option-hover); }
+    
+    .correct { border-color: #22c55e !important; background-color: #f0fdf4 !important; color: #166534 !important; font-weight: bold; }
+    /* 深色模式下的正確答案顏色微調 */
+    body.dark-mode .correct { background-color: #064e3b !important; color: #34d399 !important; }
+
+    .wrong { border-color: #ef4444 !important; background-color: #fef2f2 !important; color: #991b1b !important; }
+    /* 深色模式下的錯誤答案顏色微調 */
+    body.dark-mode .wrong { background-color: #7f1d1d !important; color: #fca5a5 !important; }
+    
+    .icon { width: 22px; height: 22px; display: none; flex-shrink: 0; }
+    .correct .icon-check { display: block; fill: currentColor; }
+    .wrong .icon-cross { display: block; fill: currentColor; }
+
+    .nav-controls { display: flex; justify-content: space-between; margin-top: 30px; }
+    .nav-btn { background: var(--primary); color: white; border: none; padding: 12px 25px; border-radius: 10px; cursor: pointer; font-weight: bold; }
+    .nav-btn:disabled { background: #cbd5e1; cursor: not-allowed; }
+    body.dark-mode .nav-btn:disabled { background: #475569; color: #94a3b8; }
+
+    .exit-btn { background: #94a3b8; margin-top: 20px; width: 100%; }
+
+    .progress-bar { height: 8px; background: var(--border); border-radius: 4px; margin-bottom: 20px; overflow: hidden; }
+    .progress-inner { height: 100%; background: var(--primary); transition: 0.3s; width: 0%; }
+    
+    .score-area { display: none; }
+</style>
+</head>
+<body>
+<button class="theme-toggle" onclick="toggleTheme()" id="theme-btn">🌙</button>
+<div id="home-page" class="card">
+    <h1>🌱 永續發展測驗系統</h1>
+    <p style="color: #64748b;">請選擇您要練習的題庫期數：</p>
+    <div class="select-group">
+        <select id="quiz-select"></select>
+    </div>
+    <button class="start-btn" onclick="startQuiz()">開始進入測驗</button>
+</div>
+
+<div id="quiz-page" class="card">
+    <div class="progress-bar"><div class="progress-inner" id="pb-inner"></div></div>
+    <div id="quiz-content">
+        <div id="progress-text" style="font-weight: bold; color: var(--primary);"></div>
+        <h2 id="question-text">載入中...</h2>
+        <div id="options-container"></div>
         
-        <script>
-            const t=document.getElementById('txt');
-            const r=document.getElementById('red');
-            const b=document.getElementById('blue');
+        <div class="nav-controls">
+            <button class="nav-btn" style="background:#64748b" id="prev-btn" onclick="prevQuestion()">上一題</button>
+            <button class="nav-btn" id="next-btn" onclick="nextQuestion()">下一題</button>
+        </div>
+        <button class="nav-btn exit-btn" onclick="goToHome()">中途結束 / 返回選單</button>
+    </div>
+
+    <div class="score-area" id="result-area" style="text-align: center;">
+        <h1 style="color: var(--primary);">測驗完成！</h1>
+        <p id="score-text" style="font-size: 24px; margin: 30px 0; font-weight: bold;"></p>
+        <button class="start-btn" onclick="goToHome()">返回主選單</button>
+    </div>
+</div>
+
+<svg style="display:none;">
+    <symbol id="check" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></symbol>
+    <symbol id="cross" viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></symbol>
+</svg>
+
+<script src="data.js"></script>
+<script>
+    let currentQuizKey = ""; 
+    let activeData = [];
+    let currentIdx = 0;
+    let score = 0;
+    let userAnswers = [];
+
+    // 初始化：載入下拉選單
+    window.onload = function() {
+        const select = document.getElementById('quiz-select');
+        Object.keys(allQuizData).forEach(key => {
+            const opt = document.createElement('option');
+            opt.value = key;
+            opt.innerText = key + " 題庫";
+            select.appendChild(opt);
+        });
+    };
+
+    function startQuiz() {
+        currentQuizKey = document.getElementById('quiz-select').value;
+        activeData = allQuizData[currentQuizKey];
+        
+        // 初始化參數
+        currentIdx = 0;
+        score = 0;
+        userAnswers = new Array(activeData.length).fill(null);
+        
+        // 切換畫面
+        document.getElementById('home-page').style.display = 'none';
+        document.getElementById('quiz-page').style.display = 'block';
+        document.getElementById('quiz-content').style.display = 'block';
+        document.getElementById('result-area').style.display = 'none';
+        
+        loadQuestion();
+    }
+
+    function goToHome() {
+        if(confirm("確定要返回主選單嗎？目前的進度將不會儲存。")) {
+            document.getElementById('home-page').style.display = 'block';
+            document.getElementById('quiz-page').style.display = 'none';
+        }
+    }
+
+    function loadQuestion() {
+        const q = activeData[currentIdx];
+        
+        // 更新進度條與文字
+        const progressPercent = ((currentIdx + 1) / activeData.length) * 100;
+        document.getElementById('pb-inner').style.width = progressPercent + "%";
+        document.getElementById('progress-text').innerText = `${currentQuizKey} 期 - 第 ${currentIdx + 1} 題`;
+        document.getElementById('question-text').innerText = q.question;
+        
+        const optionsDiv = document.getElementById('options-container');
+        optionsDiv.innerHTML = '';
+        
+        document.getElementById('prev-btn').disabled = (currentIdx === 0);
+        document.getElementById('next-btn').innerText = (currentIdx === activeData.length - 1) ? "查看總分" : "下一題";
+
+        q.options.forEach(opt => {
+            const btn = document.createElement('button');
+            btn.className = 'option-btn';
+            btn.innerHTML = `<span>${opt}</span>
+                <svg class="icon icon-check"><use xlink:href="#check"></use></svg>
+                <svg class="icon icon-cross"><use xlink:href="#cross"></use></svg>`;
             
-            r.addEventListener('click',()=>{
-                t.style.color='red';
-            });
-            b.addEventListener('click',()=>{
-                t.style.color='blue';
-            });
-        </script>
-    </body>
+            if (userAnswers[currentIdx] !== null) {
+                applyStyle(btn, opt, q.answer, userAnswers[currentIdx]);
+                btn.disabled = true;
+            } else {
+                btn.onclick = () => handleSelect(opt);
+            }
+            optionsDiv.appendChild(btn);
+        });
+    }
+
+    function handleSelect(selected) {
+    userAnswers[currentIdx] = selected;
+    const q = activeData[currentIdx];
+    
+    // 判斷是否答對：支援單一字串或陣列比對
+    let isCorrect = false;
+    if (Array.isArray(q.answer)) {
+        isCorrect = q.answer.includes(selected);
+    } else {
+        isCorrect = (selected === q.answer);
+    }
+
+    if (isCorrect) score++;
+
+    const btns = document.querySelectorAll('.option-btn');
+    btns.forEach(btn => {
+        const btnText = btn.querySelector('span').innerText;
+        applyStyle(btn, btnText, q.answer, selected);
+        btn.disabled = true;
+    });
+}
+
+function applyStyle(btn, btnText, correctAns, userSelect) {
+    // 檢查正確答案（支援陣列）
+    const isThisCorrect = Array.isArray(correctAns) 
+        ? correctAns.includes(btnText) 
+        : btnText === correctAns;
+
+    if (isThisCorrect) {
+        btn.classList.add('correct'); // 只要是正確答案，通通變綠框
+    }
+
+    // 如果使用者選的這個選項不在正確答案內，變紅框
+    const userIsWrong = Array.isArray(correctAns)
+        ? !correctAns.includes(userSelect)
+        : userSelect !== correctAns;
+
+    if (btnText === userSelect && userIsWrong) {
+        btn.classList.add('wrong');
+    }
+}
+
+    function nextQuestion() {
+        if (userAnswers[currentIdx] === null) { alert("請先完成本題作答！"); return; }
+        if (currentIdx < activeData.length - 1) {
+            currentIdx++;
+            loadQuestion();
+        } else {
+            showResult();
+        }
+    }
+
+    function prevQuestion() {
+        if (currentIdx > 0) { currentIdx--; loadQuestion(); }
+    }
+
+    function showResult() {
+        document.getElementById('quiz-content').style.display = 'none';
+        document.getElementById('result-area').style.display = 'block';
+        const percent = Math.round(score/activeData.length*100);
+        document.getElementById('score-text').innerHTML = `得分：${score} / ${activeData.length}<br><span style="font-size:48px; color:#22c55e;">${percent} 分</span>`;
+    }
+    // 切換主題功能
+function toggleTheme() {
+    const body = document.body;
+    const btn = document.getElementById('theme-btn');
+    
+    body.classList.toggle('dark-mode');
+    
+    if (body.classList.contains('dark-mode')) {
+        btn.innerText = '☀️';
+        localStorage.setItem('theme', 'dark');
+    } else {
+        btn.innerText = '🌙';
+        localStorage.setItem('theme', 'light');
+    }
+}
+
+// 頁面載入時檢查使用者之前的設定
+window.addEventListener('DOMContentLoaded', (event) => {
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'dark') {
+        document.body.classList.add('dark-mode');
+        document.getElementById('theme-btn').innerText = '☀️';
+    }
+});
+</script>
+</body>
 </html>
